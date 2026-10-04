@@ -2,6 +2,7 @@ import Link from "next/link";
 import { requireUser } from "@/server/auth/session";
 import { authorize } from "@/lib/engines/rbac";
 import { getStore } from "@/server/data/store";
+import { hydrateAllFileIntelligenceDocuments } from "@/server/documents/hosted-metadata";
 import { hrefForRef } from "@/lib/record-hrefs";
 import { DataTable } from "@/components/data-table";
 import { Button, PageHeader } from "@/components/ui";
@@ -11,6 +12,7 @@ export default async function DocumentsPage() {
   if (!authorize(user, "documents", "view")) {
     return <p className="text-sm text-danger">You are not authorized to view documents.</p>;
   }
+  await hydrateAllFileIntelligenceDocuments();
   const store = getStore();
   const rows = store.documents.map((doc) => {
     const uploader = store.profiles.find((p) => p.id === doc.uploadedBy);

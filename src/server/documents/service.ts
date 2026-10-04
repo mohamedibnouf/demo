@@ -14,6 +14,7 @@ import { hrefForRef } from "@/lib/record-hrefs";
 import { getAIProvider } from "@/server/ai";
 import { mockDocumentAnalysis, parseDocumentAnalysisJson } from "@/server/ai/document-schema";
 import { addAuditLog, getStore, mutateStore, nextNumber } from "@/server/data/store";
+import { hydrateAllFileIntelligenceDocuments, hydrateFileIntelligenceDocument, isHostedFileIntelligenceEnabled, persistFileIntelligenceDocument } from "@/server/documents/hosted-metadata";
 import { DOCUMENT_STORAGE_UNAVAILABLE, getStorageProvider, isDocumentStorageConfigured } from "@/server/storage";
 import type { DocumentAnalysisResult, ImportBatchStatus, ImportProfileKey, SessionUser } from "@/types";
 
@@ -55,7 +56,9 @@ export async function ingestUploadedFile(user: SessionUser, file: File, moduleHi
 
   const checksum = checksumBuffer(bytes);
   const id = `doc-${Date.now()}`;
-  const documentNumber = nextNumber("DOC");
+  const documentNumber = isHostedFileIntelligenceEnabled()
+    ? `DOC-${new Date().getFullYear()}-${id.replace(/\D/g, "").slice(-8)}`
+    : nextNumber("DOC");
   const storage = getStorageProvider();
   const storagePath = buildStoragePath({
     module: moduleHint,
@@ -130,10 +133,12 @@ export async function ingestUploadedFile(user: SessionUser, file: File, moduleHi
     audit(user, "DOCUMENT_PROCESSING_FAILED", documentNumber, message);
   }
 
+  await persistFileIntelligenceDocument(id);
   return { id, documentNumber };
 }
 
 export async function processDocument(user: SessionUser, documentId: string, bytes?: Buffer) {
+  await hydrateFileIntelligenceDocument(documentId);
   const store = getStore();
   const doc = store.documents.find((d) => d.id === documentId);
   if (!doc) throw new Error("Document not found");
@@ -335,8 +340,9 @@ async function processDocx(user: SessionUser, documentId: string, buffer: Buffer
   });
 }
 
-export function updateBatchMapping(user: SessionUser, batchId: string, profile: ImportProfileKey, mapping: Record<string, string>, sheetName?: string) {
+export async function updateBatchMapping(user: SessionUser, batchId: string, profile: ImportProfileKey, mapping: Record<string, string>, sheetName?: string) {
   assertDocumentAccess(user, "create");
+  await hydrateAllFileIntelligenceDocuments();
   const store = getStore();
   const batch = store.importBatches.find((b) => b.id === batchId);
   if (!batch) throw new Error("Import batch not found");
@@ -388,10 +394,12 @@ export function updateBatchMapping(user: SessionUser, batchId: string, profile: 
       });
     });
   });
+  await persistFileIntelligenceDocument(batch.documentId);
 }
 
-export function confirmImport(user: SessionUser, batchId: string) {
+export async function confirmImport(user: SessionUser, batchId: string) {
   if (!authorize(user, "excel", "create")) throw new Error("Not authorized");
+  await hydrateAllFileIntelligenceDocuments();
   const store = getStore();
   const batch = store.importBatches.find((b) => b.id === batchId);
   if (!batch) throw new Error("Import batch not found");
@@ -447,6 +455,7 @@ export function confirmImport(user: SessionUser, batchId: string) {
   });
   audit(user, "IMPORT_CONFIRMED", batch.file, `${added} created, ${updated} updated`);
   audit(user, "IMPORT_COMPLETED", batch.file, batch.profile);
+  await persistFileIntelligenceDocument(batch.documentId);
   return { added, updated, failed: batch.invalid };
 }
 
@@ -454,6 +463,7 @@ export async function analyzeDocument(user: SessionUser, documentId: string) {
   if (!authorize(user, "ai", "view") && !authorize(user, "documents", "create")) {
     throw new Error("Not authorized");
   }
+  await hydrateFileIntelligenceDocument(documentId);
   const store = getStore();
   const doc = store.documents.find((d) => d.id === documentId);
   if (!doc) throw new Error("Document not found");
@@ -530,6 +540,7 @@ export async function analyzeDocument(user: SessionUser, documentId: string) {
   });
   audit(user, "DOCUMENT_ANALYZED", doc.documentNumber, mode);
   audit(user, "AI_ANALYSIS_COMPLETED", doc.documentNumber, providerName);
+  await persistFileIntelligenceDocument(documentId);
   return result;
 }
 
@@ -539,6 +550,7 @@ export async function createDraftFromDocument(
   kind: "ncr" | "capa" | "risk" | "task",
   title: string,
 ) {
+  await hydrateFileIntelligenceDocument(documentId);
   const doc = getStore().documents.find((d) => d.id === documentId);
   if (!doc) throw new Error("Document not found");
   const { createDraftFromAnalysis } = await import("@/server/workflow-actions");
@@ -560,11 +572,13 @@ export async function createDraftFromDocument(
     }
   });
   audit(user, "DOCUMENT_LINKED", doc.documentNumber, created.id);
+  await persistFileIntelligenceDocument(documentId);
   return created;
 }
 
 export async function signedDownload(user: SessionUser, documentId: string) {
   assertDocumentAccess(user, "view");
+  await hydrateFileIntelligenceDocument(documentId);
   const doc = getStore().documents.find((d) => d.id === documentId);
   if (!doc) throw new Error("Document not found");
   if (!doc.storagePath) throw new Error("This seeded document has no stored binary. Upload a file to preview or download it.");
@@ -574,6 +588,7 @@ export async function signedDownload(user: SessionUser, documentId: string) {
 
 export async function readStoredFile(user: SessionUser, documentId: string) {
   assertDocumentAccess(user, "view");
+  await hydrateFileIntelligenceDocument(documentId);
   const doc = getStore().documents.find((d) => d.id === documentId);
   if (!doc?.storagePath) throw new Error("Stored file is not available");
   return {

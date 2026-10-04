@@ -1,6 +1,7 @@
 import { requireUser } from "@/server/auth/session";
 import { authorize } from "@/lib/engines/rbac";
 import { getStore } from "@/server/data/store";
+import { hydrateAllFileIntelligenceDocuments } from "@/server/documents/hosted-metadata";
 import { isDocumentStorageConfigured } from "@/server/storage";
 import { DataTable } from "@/components/data-table";
 import { PageHeader } from "@/components/ui";
@@ -12,6 +13,7 @@ export default async function DocumentAnalyzePage() {
     return <p className="text-sm text-danger">You are not authorized to view documents.</p>;
   }
   const storageConfigured = isDocumentStorageConfigured();
+  await hydrateAllFileIntelligenceDocuments();
   const docs = getStore().documents.map((doc) => ({
     ...doc,
     _href: `/documents/${doc.id}`,

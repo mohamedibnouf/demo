@@ -1,6 +1,7 @@
 import { requireUser } from "@/server/auth/session";
 import { authorize } from "@/lib/engines/rbac";
 import { getStore } from "@/server/data/store";
+import { hydrateAllFileIntelligenceDocuments } from "@/server/documents/hosted-metadata";
 import { DataTable } from "@/components/data-table";
 import { Card, PageHeader } from "@/components/ui";
 import { ExcelCenter } from "@/features/admin/excel-center";
@@ -11,6 +12,7 @@ import { ROLE_MATRIX } from "@/lib/engines/rbac";
 export default async function AdminPage({ params }: { params: Promise<{ module: string }> }) {
   const user = await requireUser();
   const { module } = await params;
+  if (module === "excel") await hydrateAllFileIntelligenceDocuments();
   const store = getStore();
   const adminOk = authorize(user, module === "excel" ? "excel" : module === "users" ? "users" : "admin", "view");
   if (!adminOk) return <p className="text-sm text-danger">You are not authorized to view this administration module.</p>;

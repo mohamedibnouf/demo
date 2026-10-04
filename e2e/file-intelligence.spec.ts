@@ -54,6 +54,10 @@ test.describe("File intelligence", () => {
     await page.getByRole("button", { name: "Upload", exact: true }).click();
     await expect(page).toHaveURL(/\/documents\/doc-/, { timeout: 30_000 });
     await expect(page.getByRole("button", { name: "Overview" })).toBeVisible();
+    const detailUrl = page.url();
+    await page.reload();
+    await expect(page).toHaveURL(detailUrl);
+    await expect(page.getByRole("button", { name: "Overview" })).toBeVisible();
     await page.getByRole("button", { name: "Preview" }).click();
     await expect(page.getByText(/Sheet:/)).toBeVisible();
     await page.getByRole("button", { name: "Extracted Data" }).click();
@@ -62,6 +66,25 @@ test.describe("File intelligence", () => {
     await expect(page.getByRole("button", { name: "Confirm Import" })).toBeVisible();
     await page.getByRole("button", { name: "Confirm Import" }).click();
     await expect(page.getByText(/Import completed/)).toBeVisible({ timeout: 15_000 });
+    fs.unlinkSync(workbook);
+    await assertHealthy(page);
+  });
+
+  test("Upload redirects to document detail and survives refresh", async ({ page }) => {
+    await login(page);
+    await page.goto("/documents/analyze");
+    const workbook = uniqueProductionWorkbook();
+    await page.locator('input[type="file"]').setInputFiles(workbook);
+    await page.getByRole("button", { name: "Upload", exact: true }).click();
+    await expect(page).toHaveURL(/\/documents\/doc-/, { timeout: 30_000 });
+    const detailUrl = page.url();
+    await expect(page.getByRole("button", { name: "Overview" })).toBeVisible();
+    await page.reload();
+    await expect(page).toHaveURL(detailUrl);
+    await expect(page.getByRole("button", { name: "Overview" })).toBeVisible();
+    await page.goto("/documents");
+    await page.goto(detailUrl);
+    await expect(page.getByRole("button", { name: "Overview" })).toBeVisible();
     fs.unlinkSync(workbook);
     await assertHealthy(page);
   });

@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { requireUser } from "@/server/auth/session";
 import { authorize } from "@/lib/engines/rbac";
 import { getStore } from "@/server/data/store";
+import { hydrateFileIntelligenceDocument } from "@/server/documents/hosted-metadata";
 import { PageHeader } from "@/components/ui";
 import { DocumentWorkspace } from "@/features/documents/workspace";
 
@@ -11,6 +12,7 @@ export default async function DocumentDetailPage({ params }: { params: Promise<{
     return <p className="text-sm text-danger">You are not authorized to view documents.</p>;
   }
   const { id } = await params;
+  await hydrateFileIntelligenceDocument(id);
   const store = getStore();
   const document = store.documents.find((d) => d.id === id);
   if (!document) notFound();

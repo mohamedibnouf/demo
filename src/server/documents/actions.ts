@@ -22,7 +22,7 @@ export async function analyzeDocumentAction(documentId: string) {
 
 export async function confirmImportAction(batchId: string) {
   const user = await requireUser();
-  const result = confirmImport(user, batchId);
+  const result = await confirmImport(user, batchId);
   revalidatePath("/documents");
   revalidatePath("/admin/excel");
   revalidatePath("/");
@@ -31,7 +31,7 @@ export async function confirmImportAction(batchId: string) {
 
 export async function remapImportAction(batchId: string, profile: ImportProfileKey, mapping: Record<string, string>, sheetName?: string) {
   const user = await requireUser();
-  updateBatchMapping(user, batchId, profile, mapping, sheetName);
+  await updateBatchMapping(user, batchId, profile, mapping, sheetName);
   revalidatePath("/documents");
   revalidatePath("/admin/excel");
 }
