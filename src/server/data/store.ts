@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import type { DemoStore, DocumentRecord } from "@/types";
+import { canPersistLocalFiles } from "@/server/runtime/local-fs";
 import { createSeedStore } from "./seed";
 import { formatFileSize } from "@/lib/files/validation";
 
@@ -52,19 +53,28 @@ declare global {
 }
 
 function persist(store: DemoStore) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
-  fs.writeFileSync(DATA_FILE, JSON.stringify(store), "utf8");
+  if (!canPersistLocalFiles()) return;
+  try {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+    fs.writeFileSync(DATA_FILE, JSON.stringify(store), "utf8");
+  } catch {
+    // Hosted/read-only filesystems must keep the in-memory store instead of crashing render.
+  }
 }
 
 export function getStore(): DemoStore {
   if (globalThis.__samcoStore) return globalThis.__samcoStore;
-  if (fs.existsSync(DATA_FILE)) {
-    try {
-      globalThis.__samcoStore = normalizeStore(JSON.parse(fs.readFileSync(DATA_FILE, "utf8")) as DemoStore);
-      return globalThis.__samcoStore;
-    } catch {
-      // regenerate
+  try {
+    if (canPersistLocalFiles() && fs.existsSync(DATA_FILE)) {
+      try {
+        globalThis.__samcoStore = normalizeStore(JSON.parse(fs.readFileSync(DATA_FILE, "utf8")) as DemoStore);
+        return globalThis.__samcoStore;
+      } catch {
+        // regenerate
+      }
     }
+  } catch {
+    // unreadable local file — seed in memory
   }
   const seeded = createSeedStore();
   globalThis.__samcoStore = seeded;

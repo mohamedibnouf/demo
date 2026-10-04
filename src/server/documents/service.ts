@@ -14,7 +14,7 @@ import { hrefForRef } from "@/lib/record-hrefs";
 import { getAIProvider } from "@/server/ai";
 import { mockDocumentAnalysis, parseDocumentAnalysisJson } from "@/server/ai/document-schema";
 import { addAuditLog, getStore, mutateStore, nextNumber } from "@/server/data/store";
-import { getStorageProvider } from "@/server/storage";
+import { DOCUMENT_STORAGE_UNAVAILABLE, getStorageProvider, isDocumentStorageConfigured } from "@/server/storage";
 import type { DocumentAnalysisResult, ImportBatchStatus, ImportProfileKey, SessionUser } from "@/types";
 
 function job(documentId: string, stage: string, status: "running" | "completed" | "failed", message: string) {
@@ -40,6 +40,9 @@ export function assertDocumentAccess(user: SessionUser, action: "view" | "create
 
 export async function ingestUploadedFile(user: SessionUser, file: File, moduleHint = "documents") {
   assertDocumentAccess(user, "create");
+  if (!isDocumentStorageConfigured()) {
+    throw new Error(DOCUMENT_STORAGE_UNAVAILABLE);
+  }
   const filename = assertSafeFilename(file.name);
   const bytes = Buffer.from(await file.arrayBuffer());
   const check = validateUploadFile({
