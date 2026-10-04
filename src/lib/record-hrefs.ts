@@ -58,5 +58,7 @@ export function hrefForRef(store: DemoStore, ref: string): string | null {
   if (supplier) return `/trace/supplier/${supplier.id}`;
   const material = store.materials.find((r) => r.partNumber === token || r.id === token);
   if (material) return `/trace/material/${material.id}`;
+  const document = store.documents.find((r) => r.documentNumber === token || r.id === token || r.name === token);
+  if (document) return `/documents/${document.id}`;
   return null;
 }

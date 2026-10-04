@@ -328,8 +328,9 @@ export async function reviewSupplierResponse(supplierNcrId: string, decision: "A
   });
 }
 
-export async function createDraftFromAnalysis(kind: "task" | "risk" | "ncr" | "capa", title: string) {
+export async function createDraftFromAnalysis(kind: "task" | "risk" | "ncr" | "capa", title: string, documentId?: string) {
   const user = await requireUser();
+  const sourceHref = documentId ? `/documents/${documentId}` : "/documents/analyze";
   if (kind === "task") {
     const id = `tsk-${Date.now()}`;
     mutateStore((s) => {
@@ -337,8 +338,8 @@ export async function createDraftFromAnalysis(kind: "task" | "risk" | "ncr" | "c
         id,
         title: `[DRAFT] ${title}`,
         module: "documents",
-        recordRef: "DOC-ANALYSIS",
-        recordHref: "/documents/analyze",
+        recordRef: documentId ?? "DOC-ANALYSIS",
+        recordHref: sourceHref,
         assigneeId: user.id,
         departmentId: user.departmentId,
         priority: "Medium",

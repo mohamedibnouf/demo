@@ -772,15 +772,112 @@ export interface ActivityItem {
   createdAt: string;
 }
 
+export type DocumentProcessingStatus = "uploaded" | "processing" | "processed" | "failed";
+export type DocumentLifecycleStatus = "Uploaded" | "Processing" | "Analyzed" | "Failed";
+export type ImportProfileKey = "PRODUCTION_DATA" | "RECEIVING_DATA" | "COPQ_DATA" | "NCR_DATA" | "GENERIC_EXCEL";
+export type ImportBatchStatus = "draft" | "validated" | "partially_valid" | "ready" | "imported" | "failed" | "cancelled";
+export type ImportRowStatus = "valid" | "warning" | "error";
+
 export interface DocumentRecord {
   id: string;
+  documentNumber: string;
+  title: string;
   name: string;
   type: string;
-  uploadedAt: string;
-  uploadedBy: string;
-  status: "Uploaded" | "Processing" | "Analyzed" | "Failed";
+  originalFilename: string;
+  storedFilename: string;
+  mimeType: string;
+  extension: string;
+  sizeBytes: number;
   sizeLabel: string;
+  storageBucket: string;
+  storagePath: string;
+  checksum: string;
+  module: string;
+  recordType: string | null;
+  recordId: string | null;
+  status: DocumentLifecycleStatus;
+  processingStatus: DocumentProcessingStatus;
+  uploadedBy: string;
+  uploadedAt: string;
+  processedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
   summary: string | null;
+}
+
+export interface DocumentVersion {
+  id: string;
+  documentId: string;
+  version: number;
+  storagePath: string;
+  checksum: string;
+  uploadedBy: string;
+  uploadedAt: string;
+}
+
+export interface DocumentProcessingJob {
+  id: string;
+  documentId: string;
+  stage: string;
+  status: "pending" | "running" | "completed" | "failed";
+  message: string;
+  startedAt: string;
+  completedAt: string | null;
+}
+
+export interface ExtractedTable {
+  name: string;
+  headers: string[];
+  rows: string[][];
+}
+
+export interface DocumentExtraction {
+  id: string;
+  documentId: string;
+  kind: "excel" | "pdf" | "docx" | "none";
+  pageCount: number | null;
+  sheetNames: string[];
+  text: string;
+  tables: ExtractedTable[];
+  metadata: Record<string, string>;
+  ocrEnabled: boolean;
+  extractable: boolean;
+  createdAt: string;
+}
+
+export interface ReferencedEntity {
+  type: string;
+  value: string;
+  recordId: string | null;
+  href: string | null;
+}
+
+export interface DocumentAnalysisResult {
+  id: string;
+  documentId: string;
+  provider: string;
+  mode: "LIVE" | "DEMO";
+  summary: string;
+  keyFacts: string[];
+  potentialRisks: string[];
+  potentialNonconformities: string[];
+  suggestedActions: string[];
+  dates: string[];
+  referencedEntities: ReferencedEntity[];
+  confidenceNotes: string[];
+  createdAt: string;
+  createdBy: string;
+}
+
+export interface DocumentLink {
+  id: string;
+  documentId: string;
+  recordType: string;
+  recordId: string;
+  recordRef: string;
+  createdAt: string;
+  createdBy: string;
 }
 
 export interface ImportJob {
@@ -794,6 +891,46 @@ export interface ImportJob {
   added: number;
   updated: number;
   failed: number;
+}
+
+export interface ImportBatch {
+  id: string;
+  documentId: string;
+  file: string;
+  profile: ImportProfileKey;
+  checksum: string;
+  uploadedBy: string;
+  uploadedAt: string;
+  confirmedAt: string | null;
+  status: ImportBatchStatus;
+  processed: number;
+  valid: number;
+  warnings: number;
+  invalid: number;
+  added: number;
+  updated: number;
+  failed: number;
+  mapping: Record<string, string>;
+  sheetName: string;
+}
+
+export interface ImportRowIssue {
+  field: string;
+  originalValue: string;
+  problem: string;
+  suggestion: string;
+}
+
+export interface ImportRow {
+  id: string;
+  batchId: string;
+  rowNumber: number;
+  status: ImportRowStatus;
+  original: Record<string, string>;
+  normalized: Record<string, string>;
+  issues: ImportRowIssue[];
+  importedRecordId: string | null;
+  importedRecordType: string | null;
 }
 
 export interface ImportError {
@@ -923,7 +1060,14 @@ export interface DemoStore {
   notifications: NotificationItem[];
   activities: ActivityItem[];
   documents: DocumentRecord[];
+  documentVersions: DocumentVersion[];
+  documentProcessingJobs: DocumentProcessingJob[];
+  documentExtractions: DocumentExtraction[];
+  documentAnalysisResults: DocumentAnalysisResult[];
+  documentLinks: DocumentLink[];
   importJobs: ImportJob[];
+  importBatches: ImportBatch[];
+  importRows: ImportRow[];
   importErrors: ImportError[];
   sequences: NumberingSequence[];
   auditLogs: AuditLog[];

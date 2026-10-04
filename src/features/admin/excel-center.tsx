@@ -1,17 +1,27 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { Button, Card } from "@/components/ui";
 import { DataTable } from "@/components/data-table";
+import { PROFILE_LABELS } from "@/lib/files/profiles";
 import { importCsv } from "@/server/excel";
-import type { ImportError, ImportJob } from "@/types";
+import type { ImportBatch, ImportError, ImportJob } from "@/types";
 
 const SAMPLE = `source,defect,severity,model,serial_number,quantity
 AHU Line,Expansion valve leak,High,AHU-P25,SN-AHU-2026-1842,1
 Unknown,Bad model,Low,AHU-XX,BAD,twelve`;
 
-export function ExcelCenter({ jobs, errors }: { jobs: ImportJob[]; errors: ImportError[] }) {
+export function ExcelCenter({
+  jobs,
+  errors,
+  batches,
+}: {
+  jobs: ImportJob[];
+  errors: ImportError[];
+  batches: ImportBatch[];
+}) {
   const [type, setType] = useState<"Production File" | "Receiving File" | "COPQ File" | "NCR File">("NCR File");
   const [csv, setCsv] = useState(SAMPLE);
   const [pending, start] = useTransition();
@@ -19,8 +29,47 @@ export function ExcelCenter({ jobs, errors }: { jobs: ImportJob[]; errors: Impor
 
   return (
     <div className="space-y-4">
+      <div className="grid gap-3 md:grid-cols-5">
+        {(Object.keys(PROFILE_LABELS) as Array<keyof typeof PROFILE_LABELS>).map((key) => (
+          <Card key={key} className="p-3">
+            <p className="text-xs uppercase text-muted">Profile</p>
+            <p className="font-semibold">{PROFILE_LABELS[key]}</p>
+            <Link className="mt-2 inline-block text-sm text-samco" href="/documents/analyze">
+              New Import
+            </Link>
+          </Card>
+        ))}
+      </div>
       <Card className="p-4">
-        <div className="flex flex-wrap gap-3">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <p className="text-sm font-semibold">Workbook import</p>
+            <p className="text-xs text-muted">Upload a real Excel file, parse sheets, validate rows, then confirm import.</p>
+          </div>
+          <Link href="/documents/analyze">
+            <Button>New Import</Button>
+          </Link>
+        </div>
+        <DataTable
+          rows={batches.map((batch) => ({
+            ...batch,
+            profileLabel: PROFILE_LABELS[batch.profile],
+            _href: `/documents/${batch.documentId}`,
+          }))}
+          columns={[
+            { key: "file", header: "File" },
+            { key: "profileLabel", header: "Profile" },
+            { key: "status", header: "Import Status" },
+            { key: "valid", header: "Rows Imported / Valid" },
+            { key: "failed", header: "Rows Failed" },
+            { key: "uploadedAt", header: "Date" },
+          ]}
+          searchKeys={["file", "profileLabel"]}
+        />
+      </Card>
+      <Card className="p-4">
+        <p className="text-sm font-semibold">Paste CSV (legacy validator)</p>
+        <div className="mt-3 flex flex-wrap gap-3">
           <select value={type} onChange={(e) => setType(e.target.value as typeof type)} className="rounded border border-line px-2 py-1 text-sm">
             <option>Production File</option>
             <option>Receiving File</option>

@@ -14,6 +14,19 @@ export function hasSupabaseConfig(): boolean {
   return Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 }
 
+export function hasSupabaseServiceRole(): boolean {
+  return Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY && hasSupabaseConfig());
+}
+
+export function supabaseStorageBucket(): string {
+  return process.env.SUPABASE_STORAGE_BUCKET ?? "samco-documents";
+}
+
+export function maxUploadBytes(): number {
+  const parsed = Number(process.env.MAX_UPLOAD_BYTES ?? 10 * 1024 * 1024);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 10 * 1024 * 1024;
+}
+
 export function hasOpenAiKey(): boolean {
   return Boolean(process.env.OPENAI_API_KEY);
 }

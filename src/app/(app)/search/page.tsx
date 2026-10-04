@@ -19,6 +19,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
     ["Audits", store.audits.filter((r) => r.number.toLowerCase().includes(query) || r.scope.toLowerCase().includes(query)).map((r) => ({ href: hrefForRef(store, r.id) ?? `/ims/internal-audit/${r.id}`, label: r.number }))],
     ["Equipment", store.equipment.filter((r) => r.equipmentId.toLowerCase().includes(query)).map((r) => ({ href: `/quality/calibration/${r.id}`, label: r.equipmentId }))],
     ["Users", store.profiles.filter((r) => r.fullName.toLowerCase().includes(query) || r.email.toLowerCase().includes(query)).map((r) => ({ href: `/profile`, label: r.fullName }))],
+    ["Documents", store.documents.filter((r) => [r.documentNumber, r.name, r.title, r.originalFilename].join(" ").toLowerCase().includes(query)).map((r) => ({ href: `/documents/${r.id}`, label: r.documentNumber }))],
   ] as const;
 
   return (

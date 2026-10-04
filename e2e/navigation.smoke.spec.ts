@@ -39,6 +39,8 @@ const SIDEBAR = [
   "/performance/supplier-sppm",
   "/performance/customer-ffr",
   "/performance/production-constraints",
+  "/documents",
+  "/documents/analyze",
   "/ai-assistant",
   "/admin/users",
   "/admin/roles",

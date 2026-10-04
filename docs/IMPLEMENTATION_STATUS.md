@@ -14,7 +14,7 @@ A module is marked **complete** only when its required workflow and business log
 | D3 Supplier NCR, Complaints, Rework, RRR, Deviation, SE, ECN | **Partially complete** | Portals, isolation, supplier response, complaint serial validation, rework attempt gate, deviation confirmed-order rule. Remaining work is module-specific forms and full stock/ECN readiness logic. |
 | D4 Calibration, Logbooks, Paint Shop | **Partially complete** | Registers, due status, controlled-operation block, logbook readings, batches, oven tracker, destructive tests. Not every paint-shop interval slot is fully modeled. |
 | D5 IMS, Risk register, Audits, MR | **Partially complete** | Lists, 5×5 matrix, checklist download, findings, reviews. Online checklist completion and full MR input pack are thin. |
-| D6 Excel, Documents, AI, Insights, Risk Engine | **Partially complete** | CSV validation (invalid rows never persist), mock/optional OpenAI, document draft actions, deterministic risk engine. PDF/DOCX binary parse is simulated. Document “Create NCR Draft” currently opens a CAPA draft. |
+| D6 Excel, Documents, AI, Insights, Risk Engine | **Mostly complete** | Real private upload, Excel/PDF/DOCX parse, two-step import, Zod-validated AI analysis, NCR/CAPA/Risk/Task drafts from documents. OCR is not implemented. Hosted Supabase Storage is adapter-ready. |
 | D7 Admin, Reports, Search, Traceability, Audit Trail | **Partially complete** | Admin CRUD-lite screens, CSV reports, grouped search, source-event traceability, audit log page, Admin reset. Not a full configuration product. |
 | D8 Polish, tests, security, build | **Mostly complete** | typecheck/lint/tests/build pass. Responsive shell exists. No browser e2e. Next.js 16 `middleware` deprecation warning remains. |
 
@@ -70,8 +70,9 @@ A module is marked **complete** only when its required workflow and business log
 ```
 npm run typecheck   # pass
 npm run lint        # pass
-npm test            # 16 tests pass (was 15; added CAPA/NCR next-status)
+npm test            # 38/38 (18 prior + 20 file-intelligence)
 npm run build       # pass, Next.js 16.3.8
+npx playwright test # 85/85 (78 prior cases + 7 new)
 ```
 
 Live HTTP verification script: `scripts/verify-demo.mjs` — 24/26. The two failures are **intentional gaps** (no standalone create forms), not crashes.
@@ -92,8 +93,7 @@ Only: `Missing origin header from a forwarded Server Actions request` from the s
 
 1. Standalone NCR and CAPA create forms + field-level edit
 2. Proper tabbed record workspace
-3. Fix document “Create NCR Draft” to create an NCR, not a CAPA
-4. Compute dashboard trend % from `kpi_snapshots` instead of constants
+3. Compute dashboard trend % from `kpi_snapshots` instead of constants
 5. Deepen D3–D7 module-specific workflows
 6. Optional hosted Supabase cutover
 7. Browser e2e / visual QA

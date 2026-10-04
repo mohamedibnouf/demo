@@ -71,6 +71,13 @@ export const NAV: NavSection[] = [
     ],
   },
   {
+    title: "Documents",
+    items: [
+      { href: "/documents", label: "Documents", module: "documents" },
+      { href: "/documents/analyze", label: "Upload & Analyze", module: "documents" },
+    ],
+  },
+  {
     title: null,
     items: [{ href: "/ai-assistant", label: "AI Quality Assistant", module: "ai" }],
   },

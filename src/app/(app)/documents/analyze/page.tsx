@@ -1,40 +1,43 @@
+import { requireUser } from "@/server/auth/session";
+import { authorize } from "@/lib/engines/rbac";
 import { getStore } from "@/server/data/store";
-import { Card, PageHeader } from "@/components/ui";
 import { DataTable } from "@/components/data-table";
-import { DocumentActions } from "@/features/documents/document-actions";
+import { PageHeader } from "@/components/ui";
 import { DocumentUploadForm } from "@/features/documents/upload-form";
 
 export default async function DocumentAnalyzePage() {
-  const docs = getStore().documents;
+  const user = await requireUser();
+  if (!authorize(user, "documents", "view")) {
+    return <p className="text-sm text-danger">You are not authorized to view documents.</p>;
+  }
+  const docs = getStore().documents.map((doc) => ({
+    ...doc,
+    _href: `/documents/${doc.id}`,
+  }));
   return (
     <div className="space-y-4">
-      <PageHeader title="Document Intelligence" subtitle="Upload metadata is stored. Parsed analysis is advisory. Drafts require human confirmation." />
-      <DocumentUploadForm />
+      <PageHeader
+        title="Upload & Analyze"
+        subtitle="Select a file, upload it to private storage, then review extraction, validation, and AI analysis before any import."
+      />
+      {authorize(user, "documents", "create") ? (
+        <DocumentUploadForm />
+      ) : (
+        <p className="text-sm text-muted">You can view documents but are not authorized to upload.</p>
+      )}
       <DataTable
         rows={docs}
         columns={[
-          { key: "name", header: "Document" },
+          { key: "documentNumber", header: "Document #" },
+          { key: "name", header: "File" },
           { key: "type", header: "Type" },
+          { key: "processingStatus", header: "Processing" },
+          { key: "status", header: "Analysis" },
           { key: "uploadedAt", header: "Uploaded" },
-          { key: "status", header: "Status" },
           { key: "summary", header: "Summary" },
         ]}
-        searchKeys={["name", "type"]}
+        searchKeys={["documentNumber", "name", "type", "summary"]}
       />
-      <Card className="p-4">
-        <h2 className="mb-2 text-sm font-semibold uppercase text-muted">Document analysis · ALPHA-8D-229.pdf</h2>
-        <dl className="grid gap-2 text-sm md:grid-cols-2">
-          <div>Summary: Supplier 8D attributes leak to tool wear on flare seat.</div>
-          <div>Detected KPIs: SPPM, incoming reject rate</div>
-          <div>Detected dates: completion 2026-10-09</div>
-          <div>Detected risks: repeat leak if stock consumed</div>
-          <div>Detected actions: C=0 sampling, tool interlock</div>
-          <div>Responsible persons: Hiroshi Tanaka / Incoming inspector</div>
-          <div>Upcoming deadlines: 5 days</div>
-          <div>Quality issues: flare-seat porosity</div>
-        </dl>
-        <DocumentActions title="Alpha 8D flare-seat porosity" />
-      </Card>
     </div>
   );
 }

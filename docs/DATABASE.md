@@ -48,7 +48,7 @@ audit_plans, audits, audit_checklists, audit_questions, audit_findings, manageme
 
 ## Platform
 
-tasks, notifications, documents, document_versions, import_jobs, import_errors, workflow_definitions, workflow_instances, workflow_history, numbering_sequences, audit_logs, ai_analysis, ai_recommendations, kpi_snapshots, activities
+tasks, notifications, documents, document_versions, document_processing_jobs, document_extractions, document_analysis_results, import_jobs, import_batches, import_rows, import_errors, workflow_definitions, workflow_instances, workflow_history, numbering_sequences, audit_logs, ai_analysis, ai_recommendations, kpi_snapshots, activities
 
 ## KPI assumptions (documented because the SRS leaves some numerators configurable)
 

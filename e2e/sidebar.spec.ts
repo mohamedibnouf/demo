@@ -39,6 +39,8 @@ const HEADING: Record<string, string | RegExp> = {
   "/performance/supplier-sppm": "Supplier SPPM",
   "/performance/customer-ffr": "Customer FFR / PPM",
   "/performance/production-constraints": "Production Constraints (PC)",
+  "/documents": "Documents",
+  "/documents/analyze": "Upload & Analyze",
   "/ai-assistant": "AI Quality Assistant",
   "/admin/users": "Users",
   "/admin/roles": "Roles & Permissions",
@@ -80,6 +82,7 @@ const LIST_WITH_VIEW = new Set([
   "/ims/management-review",
   "/performance/production-constraints",
   "/tasks",
+  "/documents",
 ]);
 
 test.describe("Quality Manager sidebar tree", () => {

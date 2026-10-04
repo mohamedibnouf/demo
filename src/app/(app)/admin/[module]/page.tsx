@@ -94,7 +94,7 @@ export default async function AdminPage({ params }: { params: Promise<{ module: 
     return (
       <div>
         <PageHeader title="Excel Integration" subtitle="Invalid rows never enter the database" />
-        <ExcelCenter jobs={store.importJobs} errors={store.importErrors} />
+        <ExcelCenter jobs={store.importJobs} errors={store.importErrors} batches={store.importBatches} />
       </div>
     );
   }

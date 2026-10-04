@@ -49,10 +49,32 @@ Open `/demo-guide` while presenting. Login as **quality.manager@samco.demo** / `
 
 ## 6. Excel, AI, Admin (3 min)
 
-- Administration → Excel Integration — upload sample NCR/production file, show validation errors  
+- Administration → Excel Integration — New Import + validation errors  
 - `/documents/analyze` — create Task / Risk / NCR / CAPA **drafts**  
 - Management dashboard (read-only)  
 - Admin: numbering, roles, reset demo data
+
+## 7. FILE INTELLIGENCE DEMO
+
+### Scenario A — Production Excel
+
+1. Login Quality Manager  
+2. Documents → Upload & Analyze  
+3. Upload `fixtures/file-intelligence/production-demo.xlsx`  
+4. Profile detects Production  
+5. Preview sheet + row validation (valid / warning / invalid)  
+6. Confirm Import — invalid rows stay out  
+7. Open Dashboard / Quality Dashboard and note that imported quantity and any imported defect event use the existing KPI stores (no parallel fake source)
+
+### Scenario B — Quality report PDF
+
+1. Documents → Upload & Analyze  
+2. Upload `fixtures/file-intelligence/quality-report-demo.pdf`  
+3. Extracted text + identifiers (NCR-2026-0012, serial, supplier)  
+4. Analyze with AI (LIVE if a key is set, otherwise DEMO)  
+5. Show potential risk / nonconformity  
+6. Create NCR Draft — human review required  
+7. Open the new NCR; source document remains linked
 
 ## Close
 

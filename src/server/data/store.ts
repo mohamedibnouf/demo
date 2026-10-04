@@ -1,7 +1,48 @@
 import fs from "fs";
 import path from "path";
-import type { DemoStore } from "@/types";
+import type { DemoStore, DocumentRecord } from "@/types";
 import { createSeedStore } from "./seed";
+import { formatFileSize } from "@/lib/files/validation";
+
+function normalizeDocument(doc: DocumentRecord): DocumentRecord {
+  const name = doc.name || doc.originalFilename || "document";
+  const extension = doc.extension || (name.includes(".") ? `.${name.split(".").pop()}` : "");
+  return {
+    ...doc,
+    documentNumber: doc.documentNumber || `DOC-2026-${(doc.id.replace(/\D/g, "") || "0").padStart(4, "0")}`,
+    title: doc.title || name,
+    originalFilename: doc.originalFilename || name,
+    storedFilename: doc.storedFilename || name,
+    mimeType: doc.mimeType || "application/octet-stream",
+    extension,
+    sizeBytes: doc.sizeBytes ?? 0,
+    sizeLabel: doc.sizeLabel || formatFileSize(doc.sizeBytes ?? 0),
+    storageBucket: doc.storageBucket || "samco-documents-local",
+    storagePath: doc.storagePath || "",
+    checksum: doc.checksum || `legacy-${doc.id}`,
+    module: doc.module || "documents",
+    recordType: doc.recordType ?? null,
+    recordId: doc.recordId ?? null,
+    processingStatus: doc.processingStatus || (doc.status === "Failed" ? "failed" : doc.status === "Analyzed" ? "processed" : "uploaded"),
+    processedAt: doc.processedAt ?? null,
+    createdAt: doc.createdAt || doc.uploadedAt,
+    updatedAt: doc.updatedAt || doc.uploadedAt,
+  };
+}
+
+export function normalizeStore(store: DemoStore): DemoStore {
+  store.documents = (store.documents ?? []).map((doc) => normalizeDocument(doc));
+  store.documentVersions = store.documentVersions ?? [];
+  store.documentProcessingJobs = store.documentProcessingJobs ?? [];
+  store.documentExtractions = store.documentExtractions ?? [];
+  store.documentAnalysisResults = store.documentAnalysisResults ?? [];
+  store.documentLinks = store.documentLinks ?? [];
+  store.importBatches = store.importBatches ?? [];
+  store.importRows = store.importRows ?? [];
+  store.importJobs = store.importJobs ?? [];
+  store.importErrors = store.importErrors ?? [];
+  return store;
+}
 
 const DATA_DIR = path.join(process.cwd(), "data");
 const DATA_FILE = path.join(DATA_DIR, "demo-store.json");
@@ -19,7 +60,7 @@ export function getStore(): DemoStore {
   if (globalThis.__samcoStore) return globalThis.__samcoStore;
   if (fs.existsSync(DATA_FILE)) {
     try {
-      globalThis.__samcoStore = JSON.parse(fs.readFileSync(DATA_FILE, "utf8")) as DemoStore;
+      globalThis.__samcoStore = normalizeStore(JSON.parse(fs.readFileSync(DATA_FILE, "utf8")) as DemoStore);
       return globalThis.__samcoStore;
     } catch {
       // regenerate

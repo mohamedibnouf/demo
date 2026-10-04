@@ -67,5 +67,5 @@ Sequences (`NCR-2026-0001`, …) are allocated server-side with a concurrency-sa
 ## Security defaults
 
 - Deny unless allowed (RLS policies in SQL; equivalent checks in LocalDemoProvider).
-- Private evidence stored as metadata + local upload folder; signed URL pattern for Supabase Storage.
+- Private evidence stored in `LocalFileStorage` (`data/uploads`) or private Supabase bucket `samco-documents`. Downloads require an authenticated session. Signed URL pattern is used when the service-role adapter is configured.
 - Secrets never sent to the client.

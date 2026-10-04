@@ -592,16 +592,35 @@ export async function createDocumentStub(name: string) {
   const user = await requireUser();
   if (!authorize(user, "documents", "create") && !authorize(user, "documents", "view")) throw new Error("Not authorized");
   const id = `doc-${Date.now()}`;
+  const now = new Date().toISOString();
+  const filename = name || `demo-upload-${id}.pdf`;
   mutateStore((s) => {
     s.documents.unshift({
       id,
-      name: name || `demo-upload-${id}.pdf`,
+      documentNumber: nextNumber("DOC"),
+      title: filename,
+      name: filename,
       type: "PDF",
-      uploadedAt: new Date().toISOString(),
+      originalFilename: filename,
+      storedFilename: filename,
+      mimeType: "application/pdf",
+      extension: ".pdf",
+      sizeBytes: 0,
+      sizeLabel: "0 B",
+      storageBucket: "samco-documents-local",
+      storagePath: "",
+      checksum: `stub-${id}`,
+      module: "documents",
+      recordType: null,
+      recordId: null,
+      uploadedAt: now,
       uploadedBy: user.id,
-      status: "Analyzed",
-      sizeLabel: "12 KB",
-      summary: "Demo upload recorded locally. Analysis is advisory and requires confirmation.",
+      status: "Uploaded",
+      processingStatus: "processed",
+      processedAt: now,
+      createdAt: now,
+      updatedAt: now,
+      summary: "Metadata-only stub. Use Upload & Analyze to store a real file.",
     });
   });
   return id;
