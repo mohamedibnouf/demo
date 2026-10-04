@@ -4,19 +4,23 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Bell, ChevronDown } from "lucide-react";
 import { logoutAction } from "@/server/auth/actions";
-import type { SessionUser } from "@/types";
+import { markNotificationRead } from "@/server/workflow-actions";
+import type { NotificationItem, SessionUser } from "@/types";
 import { useState, useTransition } from "react";
 
 export function Header({
   user,
   unread,
   demoMode,
+  notifications,
 }: {
   user: SessionUser;
   unread: number;
   demoMode: boolean;
+  notifications: NotificationItem[];
 }) {
   const [open, setOpen] = useState(false);
+  const [bellOpen, setBellOpen] = useState(false);
   const [lang, setLang] = useState(user.locale);
   const [, start] = useTransition();
   const router = useRouter();
@@ -51,12 +55,61 @@ export function Header({
             className="w-64 rounded-md border border-line px-3 py-1.5 text-sm"
           />
         </form>
-        <Link href="/notifications" className="relative rounded-md p-2 hover:bg-ice">
-          <Bell size={18} />
-          {unread > 0 ? (
-            <span className="absolute right-1 top-1 rounded-full bg-danger px-1 text-[10px] text-white">{unread}</span>
+        <div className="relative">
+          <button
+            type="button"
+            className="relative rounded-md p-2 hover:bg-ice"
+            aria-label="Notifications"
+            onClick={() => setBellOpen((v) => !v)}
+          >
+            <Bell size={18} />
+            {unread > 0 ? (
+              <span className="absolute right-1 top-1 rounded-full bg-danger px-1 text-[10px] text-white">{unread}</span>
+            ) : null}
+          </button>
+          {bellOpen ? (
+            <div className="absolute right-0 z-30 mt-1 w-80 rounded-md border border-line bg-white p-2 shadow-lg">
+              <div className="mb-2 flex items-center justify-between px-1">
+                <p className="text-xs font-semibold uppercase text-muted">Notifications</p>
+                <Link href="/notifications" className="text-xs text-samco" onClick={() => setBellOpen(false)}>
+                  View All
+                </Link>
+              </div>
+              <ul className="max-h-80 space-y-2 overflow-y-auto">
+                {notifications.length ? (
+                  notifications.map((n) => (
+                    <li key={n.id} className="rounded border border-line p-2">
+                      <Link
+                        href={n.href}
+                        className="block text-sm font-medium hover:text-samco"
+                        onClick={() => {
+                          if (!n.read) start(() => markNotificationRead(n.id));
+                          setBellOpen(false);
+                        }}
+                      >
+                        {n.event}
+                      </Link>
+                      <p className="text-xs text-muted">{n.message}</p>
+                      {!n.read ? (
+                        <button
+                          type="button"
+                          className="mt-1 text-xs text-samco"
+                          onClick={() => start(async () => { await markNotificationRead(n.id); router.refresh(); })}
+                        >
+                          Mark as read
+                        </button>
+                      ) : (
+                        <p className="mt-1 text-[11px] text-muted">Read</p>
+                      )}
+                    </li>
+                  ))
+                ) : (
+                  <li className="px-2 py-4 text-sm text-muted">No notifications for this user.</li>
+                )}
+              </ul>
+            </div>
           ) : null}
-        </Link>
+        </div>
         <select
           value={lang}
           onChange={(e) => switchLang(e.target.value as "en" | "ar")}
@@ -79,7 +132,7 @@ export function Header({
           </button>
           {open ? (
             <div className="absolute right-0 z-30 mt-1 w-48 rounded-md border border-line bg-white py-1 shadow-lg">
-              <Link href="/admin/users" className="block px-3 py-2 text-sm hover:bg-ice">
+              <Link href="/profile" className="block px-3 py-2 text-sm hover:bg-ice">
                 Profile
               </Link>
               <Link href="/demo-guide" className="block px-3 py-2 text-sm hover:bg-ice">

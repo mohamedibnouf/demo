@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { runRiskEngine } from "@/server/risk-engine";
 import { getStore } from "@/server/data/store";
+import { hrefForRef } from "@/lib/record-hrefs";
 import { Badge, Card, PageHeader } from "@/components/ui";
 
 export default async function RisksPage() {
@@ -30,7 +31,25 @@ export default async function RisksPage() {
                 {dept?.name} · {owner?.fullName} · Detected {risk.detectedAt} · Target {risk.targetDate}
               </p>
               <p className="mt-2 text-sm">Suggested action: {risk.suggestedAction}</p>
-              <p className="mt-2 text-xs text-samco">Related: {risk.relatedRecords.join(", ")}</p>
+              <p className="mt-2 text-xs">
+                Related:{" "}
+                {risk.relatedRecords.slice(0, 6).map((ref, i) => {
+                  const href = hrefForRef(store, ref);
+                  return href ? (
+                    <span key={ref}>
+                      {i ? ", " : ""}
+                      <Link href={href} className="text-samco hover:underline">
+                        {ref}
+                      </Link>
+                    </span>
+                  ) : (
+                    <span key={ref}>
+                      {i ? ", " : ""}
+                      {ref}
+                    </span>
+                  );
+                })}
+              </p>
               <Link href="/ai-assistant" className="mt-3 inline-block text-xs text-samco">
                 Ask AI to explain this risk
               </Link>

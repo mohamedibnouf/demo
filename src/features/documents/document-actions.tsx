@@ -12,7 +12,7 @@ export function DocumentActions({ title }: { title: string }) {
   function make(kind: "task" | "risk" | "ncr" | "capa", label: string) {
     start(async () => {
       try {
-        const res = await createDraftFromAnalysis(kind === "ncr" ? "capa" : kind, title);
+        const res = await createDraftFromAnalysis(kind, title);
         toast.success(`${label} created as draft`);
         router.push(res.href);
       } catch (error) {

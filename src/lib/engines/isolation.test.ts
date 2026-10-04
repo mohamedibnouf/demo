@@ -14,6 +14,16 @@ describe("supplier isolation", () => {
   });
 });
 
+describe("admin route protection", () => {
+  it("does not grant Quality Inspector users or admin view", () => {
+    expect(can("Quality Inspector", "users", "view")).toBe(false);
+    expect(can("Quality Inspector", "admin", "view")).toBe(false);
+    expect(can("Quality Manager", "admin", "edit")).toBe(false);
+    expect(can("Quality Manager", "admin", "view")).toBe(true);
+    expect(can("Admin", "admin", "edit")).toBe(true);
+  });
+});
+
 describe("customer isolation", () => {
   it("hides internal investigation from the customer projection", () => {
     const store = createSeedStore();

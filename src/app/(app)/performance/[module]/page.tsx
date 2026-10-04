@@ -37,18 +37,24 @@ export default async function PerformancePage({ params }: { params: Promise<{ mo
         {user.role === "Management" ? <p className="text-sm text-muted">Read-only. Drill down is permitted; edits are blocked server-side.</p> : null}
         <KpiGrid kpis={kpis} />
         <div className="grid gap-3 md:grid-cols-3">
-          <Card className="p-4">
-            <p className="text-xs uppercase text-muted">Open CAPA</p>
-            <p className="text-2xl font-semibold">{store.capas.filter((c) => !["Closed", "Effective"].includes(c.status)).length}</p>
-          </Card>
-          <Card className="p-4">
-            <p className="text-xs uppercase text-muted">Overdue CAPA</p>
-            <p className="text-2xl font-semibold">{store.capas.filter((c) => c.status === "Overdue").length}</p>
-          </Card>
-          <Card className="p-4">
-            <p className="text-xs uppercase text-muted">Significant risks</p>
-            <p className="text-2xl font-semibold">{risks.filter((r) => r.level === "HIGH" || r.level === "CRITICAL").length}</p>
-          </Card>
+          <Link href="/quality/capa">
+            <Card className="p-4 transition hover:border-samco">
+              <p className="text-xs uppercase text-muted">Open CAPA</p>
+              <p className="text-2xl font-semibold">{store.capas.filter((c) => !["Closed", "Effective"].includes(c.status)).length}</p>
+            </Card>
+          </Link>
+          <Link href="/quality/capa">
+            <Card className="p-4 transition hover:border-samco">
+              <p className="text-xs uppercase text-muted">Overdue CAPA</p>
+              <p className="text-2xl font-semibold">{store.capas.filter((c) => c.status === "Overdue").length}</p>
+            </Card>
+          </Link>
+          <Link href="/risks">
+            <Card className="p-4 transition hover:border-samco">
+              <p className="text-xs uppercase text-muted">Significant risks</p>
+              <p className="text-2xl font-semibold">{risks.filter((r) => r.level === "HIGH" || r.level === "CRITICAL").length}</p>
+            </Card>
+          </Link>
         </div>
       </div>
     );
@@ -106,9 +112,9 @@ export default async function PerformancePage({ params }: { params: Promise<{ mo
       <div className="space-y-4">
         <PageHeader title="Production Constraints (PC)" subtitle="Official term — not Turnback. Linked to originating quality events to prevent double counting." />
         <DataTable
-          rows={store.productionConstraints}
+          rows={store.productionConstraints.map((r) => ({ ...r, _href: `/performance/production-constraints/${r.id}` }))}
           columns={[
-            { key: "number", header: "PC" },
+            { key: "number", header: "PC", link: true },
             { key: "serialNumber", header: "Serial" },
             { key: "defect", header: "Defect" },
             { key: "classification", header: "Class" },

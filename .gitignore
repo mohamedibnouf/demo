@@ -36,6 +36,12 @@ next-env.d.ts
 # demo store persistence (regenerated)
 /data/demo-store.json
 /data/uploads/*
+/data/route-audit-run.json
+
+# playwright
+/test-results/
+/playwright-report/
+/blob-report/
 
 # vercel
 .vercel

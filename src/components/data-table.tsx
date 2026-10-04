@@ -1,13 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { Badge, EmptyState, statusTone } from "./ui";
 
 export type Column<T> = {
   key: keyof T | string;
   header: string;
-  render?: (row: T) => React.ReactNode;
+  render?: (row: T) => ReactNode;
   hrefField?: keyof T | string;
   link?: boolean;
 };
@@ -24,15 +24,26 @@ export function DataTable<T extends { id: string }>({
   pageSize?: number;
 }) {
   const [q, setQ] = useState("");
+  const [status, setStatus] = useState("all");
   const [sort, setSort] = useState<string | null>(null);
   const [dir, setDir] = useState<"asc" | "desc">("asc");
   const [page, setPage] = useState(1);
+  const hasHref = rows.some((row) => Boolean((row as { _href?: string })._href));
+  const statuses = useMemo(() => {
+    const values = rows
+      .map((row) => String((row as { status?: string }).status ?? ""))
+      .filter(Boolean);
+    return Array.from(new Set(values));
+  }, [rows]);
 
   const filtered = useMemo(() => {
     const query = q.trim().toLowerCase();
     let next = rows;
+    if (status !== "all") {
+      next = next.filter((row) => String((row as { status?: string }).status ?? "") === status);
+    }
     if (query) {
-      next = rows.filter((row) =>
+      next = next.filter((row) =>
         searchKeys.some((key) => String(row[key] ?? "").toLowerCase().includes(query)),
       );
     }
@@ -44,7 +55,7 @@ export function DataTable<T extends { id: string }>({
       });
     }
     return next;
-  }, [rows, q, searchKeys, sort, dir]);
+  }, [rows, q, status, searchKeys, sort, dir]);
 
   const pages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const slice = filtered.slice((page - 1) * pageSize, page * pageSize);
@@ -65,6 +76,33 @@ export function DataTable<T extends { id: string }>({
           placeholder="Search this table"
           className="w-full max-w-sm rounded-md border border-line px-3 py-1.5 text-sm"
         />
+        {statuses.length ? (
+          <select
+            value={status}
+            onChange={(e) => {
+              setStatus(e.target.value);
+              setPage(1);
+            }}
+            className="rounded-md border border-line px-2 py-1.5 text-sm"
+            aria-label="Filter by status"
+          >
+            <option value="all">All statuses</option>
+            {statuses.map((value) => (
+              <option key={value}>{value}</option>
+            ))}
+          </select>
+        ) : null}
+        <button
+          type="button"
+          className="text-xs text-samco hover:underline"
+          onClick={() => {
+            setQ("");
+            setStatus("all");
+            setPage(1);
+          }}
+        >
+          Clear filters
+        </button>
         <p className="text-xs text-muted">{filtered.length} records</p>
       </div>
       <div className="overflow-x-auto">
@@ -85,9 +123,17 @@ export function DataTable<T extends { id: string }>({
                   </button>
                 </th>
               ))}
+              {hasHref ? <th>Action</th> : null}
             </tr>
           </thead>
           <tbody>
+            {!slice.length ? (
+              <tr>
+                <td colSpan={columns.length + (hasHref ? 1 : 0)} className="px-3 py-8 text-center text-sm text-muted">
+                  No records match the current filters.
+                </td>
+              </tr>
+            ) : null}
             {slice.map((row) => (
               <tr key={row.id}>
                 {columns.map((col) => {
@@ -114,6 +160,17 @@ export function DataTable<T extends { id: string }>({
                     </td>
                   );
                 })}
+                {hasHref ? (
+                  <td>
+                    {(row as { _href?: string })._href ? (
+                      <Link href={String((row as { _href?: string })._href)} className="text-samco hover:underline">
+                        View
+                      </Link>
+                    ) : (
+                      "—"
+                    )}
+                  </td>
+                ) : null}
               </tr>
             ))}
           </tbody>

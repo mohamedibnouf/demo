@@ -13,12 +13,15 @@ export default async function AdminPage({ params }: { params: Promise<{ module: 
   const { module } = await params;
   const store = getStore();
   const adminOk = authorize(user, module === "excel" ? "excel" : module === "users" ? "users" : "admin", "view");
-  if (!adminOk) return <p className="text-sm text-danger">Administration access required.</p>;
+  if (!adminOk) return <p className="text-sm text-danger">You are not authorized to view this administration module.</p>;
+
+  const viewOnly = user.role !== "Admin";
 
   if (module === "users") {
     return (
       <div>
         <PageHeader title="Users" subtitle="Demo identities — password is shared and documented" />
+        {viewOnly ? <p className="mb-3 text-xs text-muted">View only. Changing users requires the Admin role.</p> : null}
         <DataTable
           rows={store.profiles.map((p) => ({ ...p, activeLabel: p.active ? "Yes" : "No" }))}
           columns={[

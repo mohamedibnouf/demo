@@ -40,6 +40,8 @@ export const NAV: NavSection[] = [
       { href: "/logbooks/cpu-coil", label: "CPU Coil", module: "logbook" },
       { href: "/logbooks/ahu-coil", label: "AHU Coil", module: "logbook" },
       { href: "/logbooks/paint-shop", label: "Paint Shop", module: "logbook" },
+      { href: "/logbooks/oven-tracker", label: "Oven Tracker", module: "logbook" },
+      { href: "/logbooks/destructive-tests", label: "Destructive Tests", module: "logbook" },
     ],
   },
   {

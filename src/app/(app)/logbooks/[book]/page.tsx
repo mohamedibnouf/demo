@@ -4,6 +4,7 @@ import { requireUser } from "@/server/auth/session";
 import { authorize } from "@/lib/engines/rbac";
 import { DataTable } from "@/components/data-table";
 import { Card, PageHeader } from "@/components/ui";
+import { CreateLogbookButton } from "@/features/records/create-draft-button";
 import { notFound } from "next/navigation";
 
 const BOOKS = {
@@ -26,7 +27,11 @@ export default async function LogbookPage({ params }: { params: Promise<{ book: 
 
   return (
     <div className="space-y-4">
-      <PageHeader title={`${type} Daily Logbook`} subtitle="Dedicated logbook — not a generic NCR screen" />
+      <PageHeader
+        title={`${type} Daily Logbook`}
+        subtitle="Dedicated logbook — not a generic NCR screen"
+        actions={authorize(user, "logbook", "create") ? <CreateLogbookButton type={type} /> : null}
+      />
       <DataTable
         rows={rows}
         columns={[

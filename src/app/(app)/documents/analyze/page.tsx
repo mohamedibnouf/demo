@@ -2,15 +2,14 @@ import { getStore } from "@/server/data/store";
 import { Card, PageHeader } from "@/components/ui";
 import { DataTable } from "@/components/data-table";
 import { DocumentActions } from "@/features/documents/document-actions";
+import { DocumentUploadForm } from "@/features/documents/upload-form";
 
 export default async function DocumentAnalyzePage() {
   const docs = getStore().documents;
   return (
     <div className="space-y-4">
       <PageHeader title="Document Intelligence" subtitle="Upload metadata is stored. Parsed analysis is advisory. Drafts require human confirmation." />
-      <Card className="border-dashed p-6 text-center text-sm text-muted">
-        Demo upload zone — PDF, DOCX, XLSX, CSV, images. Files stay in the local demo store.
-      </Card>
+      <DocumentUploadForm />
       <DataTable
         rows={docs}
         columns={[

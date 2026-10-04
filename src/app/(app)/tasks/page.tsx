@@ -4,7 +4,7 @@ import { daysRemaining, dueLabel } from "@/lib/engines/due-dates";
 import { DEMO_AS_OF } from "@/lib/env";
 import { DataTable } from "@/components/data-table";
 import { PageHeader } from "@/components/ui";
-import { completeTask } from "@/server/workflow-actions";
+import { CompleteTaskButton } from "@/features/records/row-actions";
 
 export default async function TasksPage({ searchParams }: { searchParams: Promise<{ filter?: string }> }) {
   const user = await requireUser();
@@ -13,13 +13,14 @@ export default async function TasksPage({ searchParams }: { searchParams: Promis
   let rows = store.tasks;
   if (filter === "mine") rows = rows.filter((t) => t.assigneeId === user.id);
   if (filter === "overdue") rows = rows.filter((t) => daysRemaining(t.dueDate, DEMO_AS_OF) < 0 && t.status !== "Completed");
-  if (filter === "soon") rows = rows.filter((t) => daysRemaining(t.dueDate, DEMO_AS_OF) <= 2);
+  if (filter === "soon") rows = rows.filter((t) => daysRemaining(t.dueDate, DEMO_AS_OF) <= 2 && t.status !== "Completed");
   if (filter === "done") rows = rows.filter((t) => t.status === "Completed");
   if (filter === "high") rows = rows.filter((t) => t.priority === "High" || t.priority === "Critical");
 
   const decorated = rows.map((t) => ({
     ...t,
     due: dueLabel(daysRemaining(t.dueDate, store.meta.asOf)),
+    _href: t.recordHref,
   }));
 
   return (
@@ -51,18 +52,16 @@ export default async function TasksPage({ searchParams }: { searchParams: Promis
         ]}
         searchKeys={["title", "recordRef", "module"]}
       />
-      <form
-        className="mt-4 text-sm text-muted"
-        action={async () => {
-          "use server";
-          const first = decorated.find((t) => t.status !== "Completed");
-          if (first) await completeTask(first.id);
-        }}
-      >
-        <button type="submit" className="text-samco hover:underline">
-          Complete first open task in this view
-        </button>
-      </form>
+      <div className="mt-4 space-y-2">
+        <p className="text-xs font-semibold uppercase text-muted">Complete a task</p>
+        {decorated.filter((t) => t.status !== "Completed").slice(0, 6).map((task) => (
+          <div key={task.id} className="flex items-center justify-between rounded border border-line px-3 py-2 text-sm">
+            <span>{task.title}</span>
+            <CompleteTaskButton id={task.id} />
+          </div>
+        ))}
+        {!decorated.some((t) => t.status !== "Completed") ? <p className="text-sm text-muted">No open tasks in this view.</p> : null}
+      </div>
     </div>
   );
 }

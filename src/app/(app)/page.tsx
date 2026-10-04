@@ -99,25 +99,29 @@ export default async function DashboardPage({
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">
-        <Card className="p-4">
-          <h2 className="mb-3 text-sm font-semibold uppercase text-muted">Risk Overview</h2>
-          <ul className="space-y-2 text-sm">
-            <li>High / Critical: {riskSummary.high}</li>
-            <li>Medium: {riskSummary.medium}</li>
-            <li>Low: {riskSummary.low}</li>
-            <li>Overdue actions: {riskSummary.overdue}</li>
-          </ul>
-        </Card>
-        <Card className="p-4">
-          <h2 className="mb-3 text-sm font-semibold uppercase text-muted">Audit Status</h2>
-          <ul className="space-y-2 text-sm">
-            <li>Planned: {audits.planned}</li>
-            <li>Completed: {audits.completed}</li>
-            <li>Overdue: {audits.overdue}</li>
-            <li>Open findings: {audits.openFindings}</li>
-            <li>Closed findings: {audits.closedFindings}</li>
-          </ul>
-        </Card>
+        <Link href="/risks">
+          <Card className="p-4 transition hover:border-samco">
+            <h2 className="mb-3 text-sm font-semibold uppercase text-muted">Risk Overview</h2>
+            <ul className="space-y-2 text-sm">
+              <li>High / Critical: {riskSummary.high}</li>
+              <li>Medium: {riskSummary.medium}</li>
+              <li>Low: {riskSummary.low}</li>
+              <li>Overdue actions: {riskSummary.overdue}</li>
+            </ul>
+          </Card>
+        </Link>
+        <Link href="/ims/internal-audit">
+          <Card className="p-4 transition hover:border-samco">
+            <h2 className="mb-3 text-sm font-semibold uppercase text-muted">Audit Status</h2>
+            <ul className="space-y-2 text-sm">
+              <li>Planned: {audits.planned}</li>
+              <li>Completed: {audits.completed}</li>
+              <li>Overdue: {audits.overdue}</li>
+              <li>Open findings: {audits.openFindings}</li>
+              <li>Closed findings: {audits.closedFindings}</li>
+            </ul>
+          </Card>
+        </Link>
         <Card className="p-4">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="text-sm font-semibold uppercase text-muted">Upcoming Tasks</h2>

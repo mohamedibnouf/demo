@@ -6,6 +6,8 @@ import { getStore } from "@/server/data/store";
 import { Badge, Card, PageHeader, statusTone } from "@/components/ui";
 import { WorkflowButtons } from "./workflow-buttons";
 import { Traceability } from "@/features/traceability/traceability";
+import { RecordTabs } from "./record-tabs";
+import { hrefForRef } from "@/lib/record-hrefs";
 
 export async function RecordDetailPage({
   moduleKey,
@@ -45,6 +47,80 @@ export async function RecordDetailPage({
   const sourceEventId = typeof record.sourceEventId === "string" ? record.sourceEventId : null;
   const timeline = store.auditLogs.filter((l) => l.recordRef === record.number || l.recordRef === record.id).slice(0, 20);
   const canAct = !isReadOnlyRole(user.role) && authorize(user, moduleKey, "edit");
+  const originHref =
+    typeof record.originRecordId === "string" ? hrefForRef(store, String(record.originRecordId)) : null;
+  const serialHref = typeof record.serialNumber === "string" ? hrefForRef(store, record.serialNumber) : null;
+  const orderHref = typeof record.orderId === "string" ? hrefForRef(store, record.orderId) : null;
+
+  const overview = (
+    <Card className="p-4">
+      <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted">Overview</h2>
+      <dl className="grid gap-2 sm:grid-cols-2">
+        {Object.entries(visible)
+          .filter(([k, v]) => !["id"].includes(k) && v !== null && v !== undefined && typeof v !== "object")
+          .slice(0, 24)
+          .map(([k, v]) => (
+            <div key={k} className="rounded bg-ice px-3 py-2">
+              <dt className="text-[11px] uppercase text-muted">{k}</dt>
+              <dd className="text-sm font-medium">{String(v)}</dd>
+            </div>
+          ))}
+      </dl>
+    </Card>
+  );
+
+  const related = (
+    <Card className="p-4">
+      <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted">Related Records</h2>
+      <ul className="mb-3 space-y-1 text-sm">
+        {originHref ? (
+          <li>
+            Origin:{" "}
+            <Link href={originHref} className="text-samco hover:underline">
+              {String(record.originLabel ?? record.originRecordId)}
+            </Link>
+          </li>
+        ) : null}
+        {serialHref ? (
+          <li>
+            Serial:{" "}
+            <Link href={serialHref} className="text-samco hover:underline">
+              {String(record.serialNumber)}
+            </Link>
+          </li>
+        ) : null}
+        {orderHref ? (
+          <li>
+            Production order:{" "}
+            <Link href={orderHref} className="text-samco hover:underline">
+              {String(record.orderId)}
+            </Link>
+          </li>
+        ) : null}
+      </ul>
+      {sourceEventId ? <Traceability sourceEventId={sourceEventId} /> : <p className="text-sm text-muted">No linked quality event on this record.</p>}
+    </Card>
+  );
+
+  const timelineCard = (
+    <Card className="p-4">
+      <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted">Timeline / Audit History</h2>
+      <ul className="space-y-2 text-sm">
+        {timeline.length ? (
+          timeline.map((log) => (
+            <li key={log.id} className="border-b border-line pb-2">
+              <p className="font-medium">{log.action}</p>
+              <p className="text-xs text-muted">
+                {log.createdAt.replace("T", " ").slice(0, 16)} · {log.newValue}
+              </p>
+            </li>
+          ))
+        ) : (
+          <li className="text-muted">No audit events yet for this record.</li>
+        )}
+      </ul>
+    </Card>
+  );
 
   return (
     <div>
@@ -57,9 +133,7 @@ export async function RecordDetailPage({
       <PageHeader
         title={String(record.number ?? record.equipmentId ?? record.title ?? title)}
         subtitle={String(record.defect ?? record.problem ?? record.finding ?? record.scope ?? record.type ?? "")}
-        actions={
-          record.status ? <Badge tone={statusTone(String(record.status))}>{String(record.status)}</Badge> : null
-        }
+        actions={record.status ? <Badge tone={statusTone(String(record.status))}>{String(record.status)}</Badge> : null}
       />
 
       {canAct ? (
@@ -74,51 +148,22 @@ export async function RecordDetailPage({
         />
       ) : (
         <p className="mb-4 text-xs text-muted">
-          {isReadOnlyRole(user.role) ? "Management may view and export only." : "You do not have edit permission on this module."}
+          {isReadOnlyRole(user.role)
+            ? "Management may view and export only."
+            : "You do not have edit permission on this module."}
         </p>
       )}
 
-      <div className="grid gap-4 xl:grid-cols-[1.4fr_0.8fr]">
-        <Card className="p-4">
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted">Overview</h2>
-          <dl className="grid gap-2 sm:grid-cols-2">
-            {Object.entries(visible)
-              .filter(([k, v]) => !["id"].includes(k) && v !== null && v !== undefined && typeof v !== "object")
-              .slice(0, 24)
-              .map(([k, v]) => (
-                <div key={k} className="rounded bg-ice px-3 py-2">
-                  <dt className="text-[11px] uppercase text-muted">{k}</dt>
-                  <dd className="text-sm font-medium">{String(v)}</dd>
-                </div>
-              ))}
-          </dl>
-        </Card>
-        <div className="space-y-4">
-          <Card className="p-4">
-            <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted">Timeline / Audit History</h2>
-            <ul className="space-y-2 text-sm">
-              {timeline.length ? (
-                timeline.map((log) => (
-                  <li key={log.id} className="border-b border-line pb-2">
-                    <p className="font-medium">{log.action}</p>
-                    <p className="text-xs text-muted">
-                      {log.createdAt.replace("T", " ").slice(0, 16)} · {log.newValue}
-                    </p>
-                  </li>
-                ))
-              ) : (
-                <li className="text-muted">No audit events yet for this record.</li>
-              )}
-            </ul>
-          </Card>
-          {sourceEventId ? (
-            <Card className="p-4">
-              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted">Related Records</h2>
-              <Traceability sourceEventId={sourceEventId} />
-            </Card>
-          ) : null}
-        </div>
-      </div>
+      <RecordTabs
+        tabs={[
+          { id: "overview", label: "Overview", content: overview },
+          { id: "actions", label: "Actions", content: <Card className="p-4 text-sm">{canAct ? "Use the workflow buttons above to submit, advance, void, or create linked records." : "No actions are available for this role."}</Card> },
+          { id: "evidence", label: "Evidence", content: <Card className="p-4 text-sm">{String(record.evidence ?? record.certificate ?? record.notes ?? "No evidence files attached to this demo record.")}</Card> },
+          { id: "related", label: "Related Records", content: related },
+          { id: "timeline", label: "Timeline", content: timelineCard },
+          { id: "history", label: "Audit History", content: timelineCard },
+        ]}
+      />
     </div>
   );
 }

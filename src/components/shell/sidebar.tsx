@@ -19,7 +19,7 @@ export function Sidebar({ role }: { role: RoleName }) {
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-200">SAMCO | Carrier</p>
         <p className="mt-1 text-sm font-semibold">IMS / QMS Platform</p>
       </div>
-      <nav className="flex-1 overflow-y-auto px-2 py-3">
+      <nav className="flex-1 overflow-y-auto px-2 py-3" aria-label="Primary">
         {NAV.map((section) => {
           const items = section.items.filter((item) => can(role, item.module, "view"));
           if (!items.length) return null;

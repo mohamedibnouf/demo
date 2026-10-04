@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getStore } from "@/server/data/store";
+import { hrefForRef } from "@/lib/record-hrefs";
 import { Card, PageHeader } from "@/components/ui";
 
 export default async function SearchPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
@@ -7,17 +8,17 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
   const query = q.trim().toLowerCase();
   const store = getStore();
   const groups = [
-    ["NCR", store.ncrs.filter((r) => r.number.toLowerCase().includes(query) || r.defect.toLowerCase().includes(query)).map((r) => ({ href: `/quality/production-ncr/${r.id}`, label: r.number }))],
-    ["CAPA", store.capas.filter((r) => r.number.toLowerCase().includes(query)).map((r) => ({ href: `/quality/capa/${r.id}`, label: r.number }))],
+    ["NCR", store.ncrs.filter((r) => r.number.toLowerCase().includes(query) || r.defect.toLowerCase().includes(query)).map((r) => ({ href: hrefForRef(store, r.id) ?? `/quality/production-ncr/${r.id}`, label: r.number }))],
+    ["CAPA", store.capas.filter((r) => r.number.toLowerCase().includes(query) || r.problem.toLowerCase().includes(query)).map((r) => ({ href: `/quality/capa/${r.id}`, label: r.number }))],
     ["Complaints", store.complaints.filter((r) => r.number.toLowerCase().includes(query) || r.serialNumber.toLowerCase().includes(query)).map((r) => ({ href: `/quality/customer-complaints/${r.id}`, label: r.number }))],
-    ["Serials", store.productionUnits.filter((r) => r.serialNumber.toLowerCase().includes(query)).map((r) => ({ href: `/quality/production-inspection`, label: r.serialNumber }))],
-    ["Orders", store.productionOrders.filter((r) => r.number.toLowerCase().includes(query)).map((r) => ({ href: `/performance/kpi-reports`, label: r.number }))],
-    ["Suppliers", store.suppliers.filter((r) => r.name.toLowerCase().includes(query)).map((r) => ({ href: `/admin/master-data`, label: r.name }))],
-    ["Materials", store.materials.filter((r) => r.partNumber.toLowerCase().includes(query)).map((r) => ({ href: `/admin/master-data`, label: r.partNumber }))],
+    ["Serials", store.productionUnits.filter((r) => r.serialNumber.toLowerCase().includes(query)).map((r) => ({ href: `/trace/serial/${encodeURIComponent(r.serialNumber)}`, label: r.serialNumber }))],
+    ["Orders", store.productionOrders.filter((r) => r.number.toLowerCase().includes(query)).map((r) => ({ href: `/trace/order/${r.id}`, label: r.number }))],
+    ["Suppliers", store.suppliers.filter((r) => r.name.toLowerCase().includes(query) || r.code.toLowerCase().includes(query)).map((r) => ({ href: `/trace/supplier/${r.id}`, label: r.name }))],
+    ["Materials", store.materials.filter((r) => r.partNumber.toLowerCase().includes(query)).map((r) => ({ href: `/trace/material/${r.id}`, label: r.partNumber }))],
     ["ECN", store.ecns.filter((r) => r.number.toLowerCase().includes(query)).map((r) => ({ href: `/quality/ecn/${r.id}`, label: r.number }))],
-    ["Audits", store.audits.filter((r) => r.number.toLowerCase().includes(query)).map((r) => ({ href: `/ims/internal-audit/${r.id}`, label: r.number }))],
+    ["Audits", store.audits.filter((r) => r.number.toLowerCase().includes(query) || r.scope.toLowerCase().includes(query)).map((r) => ({ href: hrefForRef(store, r.id) ?? `/ims/internal-audit/${r.id}`, label: r.number }))],
     ["Equipment", store.equipment.filter((r) => r.equipmentId.toLowerCase().includes(query)).map((r) => ({ href: `/quality/calibration/${r.id}`, label: r.equipmentId }))],
-    ["Users", store.profiles.filter((r) => r.fullName.toLowerCase().includes(query) || r.email.toLowerCase().includes(query)).map((r) => ({ href: `/admin/users`, label: r.fullName }))],
+    ["Users", store.profiles.filter((r) => r.fullName.toLowerCase().includes(query) || r.email.toLowerCase().includes(query)).map((r) => ({ href: `/profile`, label: r.fullName }))],
   ] as const;
 
   return (

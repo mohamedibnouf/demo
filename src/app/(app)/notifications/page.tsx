@@ -2,7 +2,7 @@ import { requireUser } from "@/server/auth/session";
 import { getStore } from "@/server/data/store";
 import { DataTable } from "@/components/data-table";
 import { PageHeader } from "@/components/ui";
-import { markNotificationRead } from "@/server/workflow-actions";
+import { MarkReadButton } from "@/features/records/row-actions";
 
 export default async function NotificationsPage() {
   const user = await requireUser();
@@ -11,7 +11,7 @@ export default async function NotificationsPage() {
     <div>
       <PageHeader title="Notification Center" subtitle="In-app events, unread state, and deep links" />
       <DataTable
-        rows={rows.map((n) => ({ ...n, state: n.read ? "Read" : "Unread" }))}
+        rows={rows.map((n) => ({ ...n, state: n.read ? "Read" : "Unread", _href: n.href }))}
         columns={[
           { key: "event", header: "Event", hrefField: "href" },
           { key: "recordRef", header: "Record" },
@@ -21,18 +21,14 @@ export default async function NotificationsPage() {
         ]}
         searchKeys={["event", "recordRef", "message"]}
       />
-      <form
-        className="mt-3"
-        action={async () => {
-          "use server";
-          const unread = rows.find((n) => !n.read);
-          if (unread) await markNotificationRead(unread.id);
-        }}
-      >
-        <button type="submit" className="text-sm text-samco">
-          Mark next unread as read
-        </button>
-      </form>
+      <div className="mt-4 space-y-2">
+        {rows.map((n) => (
+          <div key={n.id} className="flex items-center justify-between rounded border border-line px-3 py-2 text-sm">
+            <span>{n.event} · {n.recordRef}</span>
+            <MarkReadButton id={n.id} read={n.read} />
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

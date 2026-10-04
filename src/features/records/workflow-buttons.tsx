@@ -94,7 +94,7 @@ export function WorkflowButtons({
           Create NCR
         </Button>
       ) : null}
-      {["ncrs", "supplierNcrs", "complaints", "auditFindings"].includes(collection) ? (
+      {["ncrs", "supplierNcrs", "complaints", "auditFindings", "riskRegister", "imsObjectives"].includes(collection) ? (
         <Button
           disabled={pending}
           variant="secondary"

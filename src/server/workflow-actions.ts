@@ -372,8 +372,9 @@ export async function createDraftFromAnalysis(kind: "task" | "risk" | "ncr" | "c
     return { href: `/ims/risk-opportunity/${id}`, id };
   }
   if (kind === "ncr") {
-    const id = await createCapaFrom("documents", "analysis", "Document analysis", title, null);
-    return { href: `/quality/capa/${id}`, id };
+    const { createStandaloneNcr } = await import("@/server/create-actions");
+    const id = await createStandaloneNcr(title);
+    return { href: `/quality/production-ncr/${id}`, id };
   }
   const id = await createCapaFrom("documents", "analysis", "Document analysis", title, null);
   return { href: `/quality/capa/${id}`, id };
