@@ -1,0 +1,132 @@
+[
+  {
+    "name": "Auth rejects invalid password",
+    "ok": true,
+    "detail": "status=303 loc=/login?error=1"
+  },
+  {
+    "name": "Auth accepts quality.manager@samco.demo / SamcoDemo@2026",
+    "ok": true,
+    "detail": "status=303 loc=/ cookie=true"
+  },
+  {
+    "name": "Dashboard /",
+    "ok": true,
+    "detail": "status=200 crash=false missing=none len=58865"
+  },
+  {
+    "name": "Production NCR list /quality/production-ncr",
+    "ok": true,
+    "detail": "status=200 crash=false missing=none len=39001"
+  },
+  {
+    "name": "Production NCR detail /quality/production-ncr/ncr-0012",
+    "ok": true,
+    "detail": "status=200 crash=false missing=none len=39975"
+  },
+  {
+    "name": "Draft NCR detail /quality/production-ncr/ncr-0015",
+    "ok": true,
+    "detail": "status=200 crash=false missing=none len=32437"
+  },
+  {
+    "name": "CAPA list /quality/capa",
+    "ok": true,
+    "detail": "status=200 crash=false missing=none len=36661"
+  },
+  {
+    "name": "CAPA detail /quality/capa/capa-0008",
+    "ok": true,
+    "detail": "status=200 crash=false missing=none len=37017"
+  },
+  {
+    "name": "Tasks /tasks",
+    "ok": true,
+    "detail": "status=200 crash=false missing=none len=29601"
+  },
+  {
+    "name": "Tasks all /tasks?filter=all",
+    "ok": true,
+    "detail": "status=200 crash=false missing=none len=60441"
+  },
+  {
+    "name": "Notifications /notifications",
+    "ok": true,
+    "detail": "status=200 crash=false missing=none len=45047"
+  },
+  {
+    "name": "Inspection (create-NCR source) /quality/production-inspection/insp-0041",
+    "ok": true,
+    "detail": "status=200 crash=false missing=none len=37641"
+  },
+  {
+    "name": "NCR list has no Client-function crash",
+    "ok": true,
+    "detail": "status=200"
+  },
+  {
+    "name": "CAPA list has no Client-function crash",
+    "ok": true,
+    "detail": "status=200"
+  },
+  {
+    "name": "Dashboard KPI cards render",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "Quality Manager sees operational actions on NCR",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "Quality Manager sees CAPA workflow actions",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "Standalone Create NCR form on list page",
+    "ok": false,
+    "detail": "not present — create is from inspection / document only"
+  },
+  {
+    "name": "Standalone Create CAPA form on list page",
+    "ok": false,
+    "detail": "not present — create is from originating record"
+  },
+  {
+    "name": "NCR detail shows related source event",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "NCR detail shows timeline/audit section",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "NCR detail shows status badge Investigation",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "CAPA shows originating SNCR label",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "CAPA shows owner / due date fields",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "CAPA shows In Progress status",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "Unauthenticated NCR list redirects to login",
+    "ok": true,
+    "detail": "status=307"
+  }
+]
